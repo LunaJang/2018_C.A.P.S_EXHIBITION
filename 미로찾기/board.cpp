@@ -4,6 +4,9 @@ using namespace std;
 
 Board::Board() {
 	// width(맵의 가로 길이), height(맵의 세로 길이) 정해주기, 위의 멤버 변수 사용
+
+
+
 	// map에 자료 넣기
 }
 
