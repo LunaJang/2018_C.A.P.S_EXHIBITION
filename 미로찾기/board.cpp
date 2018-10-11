@@ -3,10 +3,9 @@
 using namespace std;
 
 Board::Board() {
-	width = 5;
-	height = 5;
+	width = 10;
+	height = 10;
 	map.resize(width, vector<int>(height));
-	map={{0,0,1,1,1},{1,0,0,0,1},{0,0,0,1,1},{0,1,0,0,1},{1,1,1,0,0}}
 	// width(맵의 가로 길이), height(맵의 세로 길이) 정해주기, 위의 멤버 변수 사용
 	// map에 자료 넣기
 }
@@ -18,7 +17,7 @@ bool Board::canMove(int x, int y, int moveX, int moveY) {
 }
 
 bool Board::isArrived(int x, int y) {
-	if (x == width && y == height)
+	if (x == 10 && y == 10)
 		return true;
 	else
 		return false;
