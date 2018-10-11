@@ -6,7 +6,7 @@
 // 장애물은 아직 만들지 말 것
 
 class Board {
-	static vector<vector <int>> map;
+	vector<vector <int>> map;
 	int width;
 	int height;
 
