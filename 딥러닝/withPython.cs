@@ -24,7 +24,7 @@ public class NewBehaviourScript : MonoBehaviour {
         cmd.StartInfo.CreateNoWindow = true;
         cmd.StartInfo.UseShellExecute = false;
         cmd.Start();
-        cmd.StandardInput.WriteLine("python model.py");
+        cmd.StandardInput.WriteLine("python new_model_python.py");
         cmd.StandardInput.Flush();
         cmd.StandardInput.Close();
         cmd.WaitForExit(1);
