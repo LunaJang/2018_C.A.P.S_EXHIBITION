@@ -249,7 +249,7 @@
  <HintPath>C:/Program Files/Unity/Editor/Data/UnityExtensions/Unity/UnityVR/RuntimeEditor/UnityEngine.VR.dll</HintPath>
  </Reference>
  <Reference Include="Valve.Newtonsoft.Json">
- <HintPath>D:/Documents/GitHub/2018_C.A.P.S_EXHIBITION/유니티/Draw Line/Assets/SteamVR/Input/Plugins/JSON.NET/Valve.Newtonsoft.Json.dll</HintPath>
+ <HintPath>D:/Desktop/이서영/대학/동아리/캡스/딥러닝+유니티 스터디/Draw Line/Assets/SteamVR/Input/Plugins/JSON.NET/Valve.Newtonsoft.Json.dll</HintPath>
  </Reference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

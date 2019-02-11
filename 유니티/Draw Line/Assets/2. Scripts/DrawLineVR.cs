@@ -15,6 +15,9 @@ public class DrawLineVR : MonoBehaviour {
     private List<Vector3> mPos = new List<Vector3>();
     private Vector3[] points;
     private GameObject parent;
+    private SpriteRenderer spr;
+    private int cameraRo;
+    private GameObject viveCamera;
 
     // Use this for initialization
     void Start()
@@ -22,8 +25,13 @@ public class DrawLineVR : MonoBehaviour {
         hand = gameObject.GetComponent<Hand>();
         points = null;
         parent = GameObject.Find("paper");
+        
+        viveCamera = GameObject.Find("Camera");
+        spr = parent.GetComponent<SpriteRenderer>();
+        spr.enabled = false;
     }
 
+    //컨프롤러의 각종 상태를 리턴해주는 함수
     public Vector2 getTrackPadPos()
     {
         SteamVR_Action_Vector2 trackpadPos = SteamVR_Input._default.inActions.touchPos;
@@ -110,6 +118,7 @@ public class DrawLineVR : MonoBehaviour {
         return Quaternion.identity;
     }
 
+    //베지에 곡선 함수를 이용해서 매끄러운 곡선을 출력하는 함수(렉이 너무 심해서 안씀+생각보다 안 매끄러움)
     public static Vector3[] MakeSmoothCurve(List<Vector3> arrayToCurve, float smoothness)
     {
         List<Vector3> points;
@@ -155,17 +164,46 @@ public class DrawLineVR : MonoBehaviour {
                 points = null;
             }
 
+            startPos = getControllerPosition();
+
+            if (viveCamera.transform.eulerAngles.y < 135 && viveCamera.transform.eulerAngles.y >= 45)
+                cameraRo = 2;
+            else if (viveCamera.transform.eulerAngles.y < 225 && viveCamera.transform.eulerAngles.y >= 135)
+                cameraRo = 1;
+            else if (viveCamera.transform.eulerAngles.y < 315 && viveCamera.transform.eulerAngles.y >= 225)
+                cameraRo = 2;
+            else
+                cameraRo = 1;
+
+            parent.transform.position = new Vector3(startPos.x, startPos.y - 0.08f , startPos.z);
+            spr.enabled = true;
+
+            if (cameraRo == 1)
+                parent.transform.rotation= Quaternion.Euler(new Vector3(0, 0, 0));
+            else
+                parent.transform.rotation = Quaternion.Euler(new Vector3(0, 90, 0));
+        }
+        else if (getPinchUp())
+        {
+            spr.enabled = false;
+            //사물 출력
+        }
+        else if (getPinch())
+        {
+            //mPos.Add(Camera.current.ScreenToWorldPoint(new Vector3(getControllerPosition().x,getControllerPosition().y,-getControllerPosition().z)));
+            //mPos.Add(getControllerPosition());
+
             GameObject[] tmp = GameObject.FindGameObjectsWithTag("line");
             if (tmp != null)
                 foreach (GameObject a in tmp)
                     Destroy(a);
-            startPos = getControllerPosition();
-            
-        }
-        else if (getPinchUp())
-        {
 
-            points = MakeSmoothCurve(mPos, 3.0f);
+            if (cameraRo == 1)
+                mPos.Add(new Vector3(getControllerPosition().x, getControllerPosition().y, startPos.z));
+            else
+                mPos.Add(new Vector3(startPos.x, getControllerPosition().y, getControllerPosition().z));
+
+            points = mPos.ToArray();
             line = new GameObject("Line").AddComponent<LineRenderer>();
             line.tag = "line";
             line.transform.parent = parent.transform;
@@ -179,12 +217,8 @@ public class DrawLineVR : MonoBehaviour {
                 line.SetPosition(counter, i);
                 ++counter;
             }
-        }
-        else if (getPinch())
-        {
-            //mPos.Add(Camera.current.ScreenToWorldPoint(new Vector3(getControllerPosition().x,getControllerPosition().y,-getControllerPosition().z)));
-            //mPos.Add(new Vector3(getControllerPosition().x,getControllerPosition().y,startPos.z));
-            mPos.Add(getControllerPosition());
+            
+
         }
     }
 }
