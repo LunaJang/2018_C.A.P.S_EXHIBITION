@@ -48,8 +48,9 @@
   <ItemGroup>
      <Compile Include="Assets\2. Scripts\DrawLineVR.cs" />
      <Compile Include="Assets\2. Scripts\DrewLineTest.cs" />
-     <Compile Include="Assets\2. Scripts\Laser.cs" />
-     <Compile Include="Assets\2. Scripts\PixelChange.cs" />
+     <Compile Include="Assets\2. Scripts\ObjectImageSnapshot.cs" />
+     <Compile Include="Assets\2. Scripts\ObjectImageSnapshotEditor.cs" />
+     <Compile Include="Assets\2. Scripts\ObjectSanpshotTest.cs" />
      <Compile Include="Assets\SteamVR\Extras\SteamVR_GazeTracker.cs" />
      <Compile Include="Assets\SteamVR\Extras\SteamVR_TestThrow.cs" />
      <Compile Include="Assets\SteamVR\Extras\SteamVR_TestTrackedCamera.cs" />

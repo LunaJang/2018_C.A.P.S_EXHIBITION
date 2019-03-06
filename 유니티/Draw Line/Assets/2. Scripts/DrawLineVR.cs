@@ -16,8 +16,15 @@ public class DrawLineVR : MonoBehaviour {
     private Vector3[] points;
     private GameObject parent;
     private SpriteRenderer spr;
-    private int cameraRo;
+    public int cameraRo;
     private GameObject viveCamera;
+
+
+    public Transform objectImageCamera;
+    public GameObject objectToSnapshot;
+    ObjectImageSnapshot snapshot;
+    Texture2D texture;
+
 
     // Use this for initialization
     void Start()
@@ -29,6 +36,8 @@ public class DrawLineVR : MonoBehaviour {
         viveCamera = GameObject.Find("Camera");
         spr = parent.GetComponent<SpriteRenderer>();
         spr.enabled = false;
+
+        snapshot = objectImageCamera.GetComponent<ObjectImageSnapshot>();
     }
 
     //컨프롤러의 각종 상태를 리턴해주는 함수
@@ -187,6 +196,9 @@ public class DrawLineVR : MonoBehaviour {
         {
             spr.enabled = false;
             //사물 출력
+
+            objectToSnapshot = GameObject.Find("Line");
+            texture = snapshot.TakeObjectSnapshot(objectToSnapshot);
         }
         else if (getPinch())
         {
@@ -208,7 +220,7 @@ public class DrawLineVR : MonoBehaviour {
             line.tag = "line";
             line.transform.parent = parent.transform;
             line.SetVertexCount(points.Length);
-            line.SetWidth(0.01f, 0.01f);
+            line.SetWidth(0.0025f, 0.0025f);
             line.SetColors(Color.black, Color.black);
             line.useWorldSpace = true;
             int counter = 0;
