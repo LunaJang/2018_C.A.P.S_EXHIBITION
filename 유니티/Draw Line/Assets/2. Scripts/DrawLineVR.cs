@@ -220,7 +220,7 @@ public class DrawLineVR : MonoBehaviour {
             line.tag = "line";
             line.transform.parent = parent.transform;
             line.SetVertexCount(points.Length);
-            line.SetWidth(0.0025f, 0.0025f);
+            line.SetWidth(0.01f, 0.01f);
             line.SetColors(Color.black, Color.black);
             line.useWorldSpace = true;
             int counter = 0;
