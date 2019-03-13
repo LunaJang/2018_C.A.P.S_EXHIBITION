@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using UnityEngine;
 using Valve.VR;
 using Valve.VR.InteractionSystem;
+using System.IO;
 
-public class DrawLineVR : MonoBehaviour {
+public class DrawLineVR : MonoBehaviour
+{
 
     private Hand hand;
 
@@ -16,8 +18,12 @@ public class DrawLineVR : MonoBehaviour {
     private Vector3[] points;
     private GameObject parent;
     private SpriteRenderer spr;
-    public int cameraRo;
+    private int cameraRo;
     private GameObject viveCamera;
+
+    public GameObject[] resultObject;
+
+    private string strFilePath;
 
 
     public Transform objectImageCamera;
@@ -32,13 +38,23 @@ public class DrawLineVR : MonoBehaviour {
         hand = gameObject.GetComponent<Hand>();
         points = null;
         parent = GameObject.Find("paper");
-        
+
         viveCamera = GameObject.Find("Camera");
         spr = parent.GetComponent<SpriteRenderer>();
         spr.enabled = false;
 
         snapshot = objectImageCamera.GetComponent<ObjectImageSnapshot>();
+        strFilePath = Application.dataPath + "/trigger.txt";
+        Debug.Log(strFilePath);
+
+        FileStream fs = new FileStream(strFilePath, FileMode.Create);
+        StreamWriter sw = new StreamWriter(fs);
+        sw.WriteLine("1");
+        sw.Close();
+        fs.Close();
     }
+
+
 
     //컨프롤러의 각종 상태를 리턴해주는 함수
     public Vector2 getTrackPadPos()
@@ -164,73 +180,135 @@ public class DrawLineVR : MonoBehaviour {
     }
 
     // Update is called once per frame
-    void Update () {
-        if (getPinchDown())
+    void Update()
+    {
+        StreamReader tr = new StreamReader(strFilePath);
+        string trigger = tr.ReadLine();
+        tr.Close();
+
+        if (trigger == "1")
         {
-            if (mPos != null)
+            if (getPinchDown())
             {
-                mPos.Clear();
-                points = null;
+                if (mPos != null)
+                {
+                    mPos.Clear();
+                    points = null;
+                }
+
+                startPos = getControllerPosition();
+
+                if (viveCamera.transform.eulerAngles.y < 135 && viveCamera.transform.eulerAngles.y >= 45)
+                    cameraRo = 2;
+                else if (viveCamera.transform.eulerAngles.y < 225 && viveCamera.transform.eulerAngles.y >= 135)
+                    cameraRo = 1;
+                else if (viveCamera.transform.eulerAngles.y < 315 && viveCamera.transform.eulerAngles.y >= 225)
+                    cameraRo = 2;
+                else
+                    cameraRo = 1;
+
+                parent.transform.position = new Vector3(startPos.x, startPos.y - 0.08f, startPos.z);
+                spr.enabled = true;
+
+                if (cameraRo == 1)
+                    parent.transform.rotation = Quaternion.Euler(new Vector3(0, 0, 0));
+                else
+                    parent.transform.rotation = Quaternion.Euler(new Vector3(0, 90, 0));
+
+            }
+            else if (getPinchUp())
+            {
+                spr.enabled = false;
+                //사물 캡쳐
+                objectToSnapshot = GameObject.Find("Line");
+                texture = snapshot.TakeObjectSnapshot(objectToSnapshot);
+
+                //cmd실행(빌드를 위해 .py 버젼)
+                System.Diagnostics.Process.Start("cmd.exe", "/c cd Draw Line_Data && classifier.py");
+
+
+
+                GameObject[] tmp = GameObject.FindGameObjectsWithTag("line");
+                if (tmp != null)
+                    foreach (GameObject a in tmp)
+                        Destroy(a);
+
+                FileStream fs = new FileStream(strFilePath, FileMode.Create);
+                StreamWriter sw = new StreamWriter(fs);
+                sw.WriteLine("0");
+                sw.Close();
+                fs.Close();
+            }
+            else if (getPinch())
+            {
+                //mPos.Add(Camera.current.ScreenToWorldPoint(new Vector3(getControllerPosition().x,getControllerPosition().y,-getControllerPosition().z)));
+                //mPos.Add(getControllerPosition());
+
+                GameObject[] tmp = GameObject.FindGameObjectsWithTag("line");
+                if (tmp != null)
+                    foreach (GameObject a in tmp)
+                        Destroy(a);
+
+                if (cameraRo == 1)
+                    mPos.Add(new Vector3(getControllerPosition().x, getControllerPosition().y, startPos.z));
+                else
+                    mPos.Add(new Vector3(startPos.x, getControllerPosition().y, getControllerPosition().z));
+
+                points = mPos.ToArray();
+                line = new GameObject("Line").AddComponent<LineRenderer>();
+                line.tag = "line";
+                line.transform.parent = parent.transform;
+                line.SetVertexCount(points.Length);
+                line.SetWidth(0.01f, 0.01f);
+                line.SetColors(Color.black, Color.black);
+                line.useWorldSpace = true;
+                int counter = 0;
+                foreach (var i in points)
+                {
+                    line.SetPosition(counter, i);
+                    ++counter;
+                }
             }
 
-            startPos = getControllerPosition();
 
-            if (viveCamera.transform.eulerAngles.y < 135 && viveCamera.transform.eulerAngles.y >= 45)
-                cameraRo = 2;
-            else if (viveCamera.transform.eulerAngles.y < 225 && viveCamera.transform.eulerAngles.y >= 135)
-                cameraRo = 1;
-            else if (viveCamera.transform.eulerAngles.y < 315 && viveCamera.transform.eulerAngles.y >= 225)
-                cameraRo = 2;
-            else
-                cameraRo = 1;
-
-            parent.transform.position = new Vector3(startPos.x, startPos.y - 0.08f , startPos.z);
-            spr.enabled = true;
-
-            if (cameraRo == 1)
-                parent.transform.rotation= Quaternion.Euler(new Vector3(0, 0, 0));
-            else
-                parent.transform.rotation = Quaternion.Euler(new Vector3(0, 90, 0));
-        }
-        else if (getPinchUp())
-        {
-            spr.enabled = false;
-            //사물 출력
-
-            objectToSnapshot = GameObject.Find("Line");
-            texture = snapshot.TakeObjectSnapshot(objectToSnapshot);
-        }
-        else if (getPinch())
-        {
-            //mPos.Add(Camera.current.ScreenToWorldPoint(new Vector3(getControllerPosition().x,getControllerPosition().y,-getControllerPosition().z)));
-            //mPos.Add(getControllerPosition());
-
-            GameObject[] tmp = GameObject.FindGameObjectsWithTag("line");
-            if (tmp != null)
-                foreach (GameObject a in tmp)
-                    Destroy(a);
-
-            if (cameraRo == 1)
-                mPos.Add(new Vector3(getControllerPosition().x, getControllerPosition().y, startPos.z));
-            else
-                mPos.Add(new Vector3(startPos.x, getControllerPosition().y, getControllerPosition().z));
-
-            points = mPos.ToArray();
-            line = new GameObject("Line").AddComponent<LineRenderer>();
-            line.tag = "line";
-            line.transform.parent = parent.transform;
-            line.SetVertexCount(points.Length);
-            line.SetWidth(0.01f, 0.01f);
-            line.SetColors(Color.black, Color.black);
-            line.useWorldSpace = true;
-            int counter = 0;
-            foreach (var i in points)
+            if (getGrip_Down())
             {
-                line.SetPosition(counter, i);
-                ++counter;
-            }
-            
+                //도형출력
+                //TextAsset data = Resources.Load("result", typeof(TextAsset)) as TextAsset;
+                //StringReader sr = new StringReader(data.text);
 
+                //string text;
+                //text = sr.ReadLine();
+                //Debug.Log(text);
+                //sr.Close();
+
+                StreamReader sr = new StreamReader(Application.dataPath + "/result.txt");
+                string text = sr.ReadLine();
+                sr.Close();
+
+                if (text == "0")
+                {
+                    Instantiate(resultObject[0], new Vector3(getControllerPosition().x, getControllerPosition().y + 0.01f, getControllerPosition().z), Quaternion.identity);
+
+                }
+                else if (text == "1")
+                {
+                    Instantiate(resultObject[1], new Vector3(getControllerPosition().x, getControllerPosition().y + 0.01f, getControllerPosition().z), Quaternion.identity);
+
+                }
+                else if (text == "2")
+                {
+                    Instantiate(resultObject[2], new Vector3(getControllerPosition().x, getControllerPosition().y + 0.01f, getControllerPosition().z), Quaternion.identity);
+
+                }
+            }
+        }
+        else
+        {
+            if (getGrip_Down())
+            {
+                Instantiate(resultObject[3], new Vector3(getControllerPosition().x, getControllerPosition().y + 0.01f, getControllerPosition().z), getControllerRotation());
+            }
         }
     }
 }

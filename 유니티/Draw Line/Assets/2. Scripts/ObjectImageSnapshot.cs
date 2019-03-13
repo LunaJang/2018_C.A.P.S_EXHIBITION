@@ -66,7 +66,7 @@ public class ObjectImageSnapshot : MonoBehaviour {
         RenderTexture.active = saveActive;
 
         byte[] bytes = texture.EncodeToPNG();
-        File.WriteAllBytes("Assets/picture.png",bytes);
+        File.WriteAllBytes(Application.dataPath+"/picture.png",bytes);
         
         RenderTexture.ReleaseTemporary(objectImageCamera.targetTexture);
         GameObject.DestroyImmediate(gameObject);
